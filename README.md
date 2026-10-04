@@ -1,7 +1,6 @@
 # Healthcare Tech Lab
 
-A learning and portfolio project for practising practical junior healthcare
-software engineering skills.
+A learning and portfolio project for practising practical healthcare and software engineering skills.
 
 ## Current Stack
 
