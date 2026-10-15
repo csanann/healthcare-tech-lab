@@ -66,3 +66,62 @@ Used `which`, `brew --prefix` and version checks to identify the different insta
   do they leave unchecked?
 - Next: Django project structure and request → URL → view → response,
   in a small increment before introducing database models.
+
+## 2026-10-15 — Django routing, endpoint testing and dependency tracking
+
+### Practised and implemented
+
+- Human registered `assessments` in `INSTALLED_APPS`, implemented
+  `health_check` returning `JsonResponse({"status": "ok"})`, and mapped
+  `path('health/', health_check, name='health_check')` in `config/urls.py`.
+- Human wrote `tests/test_health.py`, asserting HTTP 200 and the exact JSON.
+- AI created root `pytest.ini` at the human's request, selecting
+  `DJANGO_SETTINGS_MODULE = config.settings`.
+- `requirements.txt` now contains three valid, unique pins matching installed
+  versions: Django 5.2.18, pytest 9.1.1 and pytest-django 4.14.0.
+- AI added `db.sqlite3`, `*.pyc` and `__pycache__/` to `.gitignore` at the
+  human's request, preserving `.venv/`.
+
+### Debugging encountered and resolved
+
+- Human reported running `check` and `runserver`, then confirmed the failing
+  browser URL was `/`. That path has no route; `/health/` is the registered path.
+- Initial pytest run was reproduced: **1 failed, 3 passed**. `client.get`
+  raised `ImproperlyConfigured` for `DEFAULT_CHARSET` before either assertion.
+  At that point pytest-django was absent and pytest had no settings configuration.
+  `manage.py` selects `config.settings`; plain pytest does not execute it.
+- After pytest-django was installed and `pytest.ini` added, all four tests passed.
+- Initial dependency edits duplicated pytest and used an invalid
+  `<installed version>` placeholder. Current file has neither issue.
+
+### Verification repeated by AI on 2026-10-15
+
+- `.venv/bin/python -m pytest -q`: **4 passed**.
+- `.venv/bin/python manage.py check`: no issues, zero silenced.
+- `.venv/bin/python -m pip check`: no broken requirements.
+- Python version: 3.11.13. All three installed dependency versions match the pins.
+- Django's test client: `/health/` resolves to `assessments.views.health_check`
+  and returns HTTP 200 with the expected JSON; `/` returns HTTP 404.
+- `.venv/bin/python src/session_example.py`: `True`, `False`, `True`.
+- `git check-ignore` confirms all four ignore patterns match example paths.
+
+### Evidence of understanding and limits
+
+- Repository evidence: the human-authored view, route and endpoint test; human
+  supplied the exact failing URL when asked. Independent explanation of request
+  flow, pytest setup and assertion coverage has not yet been assessed.
+- Running browser/server behaviour, fresh environment recreation, migrations,
+  database connectivity and PostgreSQL setup have not been independently verified.
+- SQLite is configured, but assessment models and app migrations are not
+  implemented. The health response does not test database access.
+- Count tests establish three integer cases, not validation of strings, floats,
+  booleans or missing values. Broader Python proficiency remains to assess.
+
+### Interview practice and next task
+
+- Explain request → URL pattern → view → response using `/health/` and why
+  `/` returns 404 despite a successful configuration check.
+- Explain why pytest needs settings configuration and why its client needs no
+  running server. Distinguish setup exceptions from failed assertions.
+- Next exercise: predict the result of expecting HTTP 201 in the endpoint test,
+  run that test, and restore 200. Exercise and explanation remain pending.
